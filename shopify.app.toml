@@ -1,0 +1,33 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "dee6bc84230fa1fac3a0802a8cb6017d"
+name = "app-uniware"
+handle = "app-uniware"
+application_url = "https://convergence-subscription-away-celebration.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "bhagv.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_assigned_fulfillment_orders,read_fulfillments,read_inventory,read_locations,read_merchant_managed_fulfillment_orders,read_orders,read_products,read_third_party_fulfillment_orders,write_assigned_fulfillment_orders,write_fulfillments,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders"
+
+[auth]
+redirect_urls = [
+  "https://convergence-subscription-away-celebration.trycloudflare.com/auth/callback",
+  "https://convergence-subscription-away-celebration.trycloudflare.com/auth/shopify/callback",
+  "https://convergence-subscription-away-celebration.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks"
+
+[pos]
+embedded = false
