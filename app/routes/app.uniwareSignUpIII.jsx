@@ -3,8 +3,8 @@ import { authenticate } from '../shopify.server';
 import { Button, TextField, Card, Layout, Toast } from '@shopify/polaris';
 import { useState } from 'react';
 import { useNavigate, useActionData, useLoaderData } from '@remix-run/react';
-import { createApplicationRecurrentCharge, getLocationForShop } from '../services/apiClient';
-import { saveTenantCreationParams } from '../services/signUpService';
+import { createApplicationRecurrentCharge, getLocationForShop } from '../services/apiClient.server';
+import { saveTenantCreationParams } from '../services/signUpService.server';
 
 export const loader = async ({ request }) => {
 

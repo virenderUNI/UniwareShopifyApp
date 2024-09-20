@@ -60,6 +60,8 @@ model shopUniwareTenant {
   country            String?
   locationId         String?
   version            Int    @default(1)
+  tenantType         String?
+  tenantStatusUrl    String?
 
 
   @@unique([shopDomain])

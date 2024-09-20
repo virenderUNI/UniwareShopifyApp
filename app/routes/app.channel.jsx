@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, Layout, Page, ProgressBar, Text } from '@shopify/polaris';
 // import { checkJobStatus, updateStatusInMongo } from '~/utils/api';
 import { authenticate } from '../shopify.server';
-import { buildShopifyChannelUniware } from '../services/channelService';
+import { buildShopifyChannelUniware } from '../services/channelService.server';
 
 
 export const loader = async ({ request }) => {

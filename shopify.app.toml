@@ -3,7 +3,7 @@
 client_id = "dee6bc84230fa1fac3a0802a8cb6017d"
 name = "app-uniware"
 handle = "app-uniware"
-application_url = "https://convergence-subscription-away-celebration.trycloudflare.com"
+application_url = "https://strengthen-isbn-ve-tomorrow.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_assigned_fulfillment_orders,read_fulfillments,read_inventory,read
 
 [auth]
 redirect_urls = [
-  "https://convergence-subscription-away-celebration.trycloudflare.com/auth/callback",
-  "https://convergence-subscription-away-celebration.trycloudflare.com/auth/shopify/callback",
-  "https://convergence-subscription-away-celebration.trycloudflare.com/api/auth/callback"
+  "https://strengthen-isbn-ve-tomorrow.trycloudflare.com/auth/callback",
+  "https://strengthen-isbn-ve-tomorrow.trycloudflare.com/auth/shopify/callback",
+  "https://strengthen-isbn-ve-tomorrow.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

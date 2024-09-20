@@ -3,7 +3,7 @@ import { Form, Links, useLoaderData, Link } from '@remix-run/react';
 import { json } from '@remix-run/node';
 import { useEffect, useRef, useState } from 'react';
 import { authenticate } from '../shopify.server';
-import { getShopifyPlanDetails } from '../services/apiClient';
+import { getShopifyPlanDetails } from '../services/apiClient.server';
 import { useActionData } from '@remix-run/react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Redirect } from '@shopify/app-bridge/actions';

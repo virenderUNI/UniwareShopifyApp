@@ -371,7 +371,7 @@ export default function Index() {
     const fetcher = useFetcher();
 
     const handleClick = (actionType) => (event) => {
-        event.preventDefault(); // Prevent default form behavior
+        event.preventDefault(); 
 
         fetcher.submit({ action: actionType }, { method: 'post' });
     };

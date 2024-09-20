@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useActionData, useNavigate } from '@remix-run/react';
 import { json } from '@remix-run/node';
 import { authenticate } from '../shopify.server';
-import { validateEmailAndPhone } from '../services/signUpService';
+import { validateEmailAndPhone } from '../services/signUpService.server';
 import useSessionStorage from '../customHooks/useSessionStorage';
 
 export const action = async ({ request }) => {

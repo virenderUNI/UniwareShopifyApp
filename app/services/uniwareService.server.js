@@ -22,9 +22,8 @@ export async function checkUniwareSession(shopDetails) {
   else {
     console.log("looking for tenant details")
     const shopifyUniwareTenant = await findShopifyUniwareTenant(shopDetails);
-    if(shopifyUniwareTenant.successful) {
-      if(shopifyUniwareTenant.data.tenantSetupStatus === "RUNNING")
-      {
+    if (shopifyUniwareTenant.successful) {
+      if (shopifyUniwareTenant.data.tenantSetupStatus === "RUNNING") {
         return { "tenantCode": shopifyUniwareTenant.data.tenantCode, "redirectUrl": `/app/channel?charge_id=${shopifyUniwareTenant.data.chargeId}` }
       }
     }
@@ -45,7 +44,7 @@ export async function checkUserAvailability(email, phone) {
   try {
     const response = await axios.post(serviceUrl, requestBody, { headers: requestHeaders });
     const responseJson = response.data;
-    console.log("availability Response is",JSON.stringify(responseJson));
+    console.log("availability Response is", JSON.stringify(responseJson));
     return responseJson.successful === true ? { successful: true, message: "Good to go" } : { successful: false, error: "Already in use" };
   } catch (error) {
     console.log("checkUserAvailability error response", error);
@@ -105,67 +104,68 @@ export async function checkAccessUrlAvailability(tenantCode, phone) {
 export async function createShopifyChannelUniware(params) {
 
   console.log("try creating a new channel on uniware");
+  console.log(params)
 
   const appUniwareAuth = await findUniwareCred(params.get("hostname"));
-  const createShopifyChannelUniwareUrl = `https://${appUniwareAuth.tenantCode}.unicommerce.com/services/rest/v1/channel/create`
+  const createShopifyChannelUniwareUrl = `https://${appUniwareAuth.data.tenantCode}.unicommerce.com/services/rest/v1/channel/create`
   const requestHeaders = {
     "Content-Type": "application/json",
-    "Authorization": `bearer ${appUniwareAuth.accessToken}`
+    "Authorization": `bearer ${appUniwareAuth.data.accessToken}`
   }
-  const channelCreationRequest =
-  {
-    channel: {
-      sourceCode: "SHOPIFY",
-      channelName: "SHOPIFY"
+  const channelCreationRequest = {
+    "channel": {
+        "sourceCode": "SHOPIFY",
+        "channelName": "SHOPIFY"
     },
-    channelConnectors: [{
-      channelCode: "SHOPIFY",
-      name: "SHOPIFY_API",
-      channelConnectorParameters: [
+    "channelConnectors": [
         {
-          name: "hostname",
-          value: params.get("hostname")
-        },
-        {
-          name: "apiKey",
-          value: params.get("apiKey")
-        },
-        {
-          name: "locationId",
-          value: params.get("locationId")
-        },
-        {
-          name: "password",
-          value: params.get("password")
-        },
-        {
-          name: "EMAIL",
-          value: params.get("Email")
-        },
-        {
-          name: "prefix",
-          value: params.get("prefix")
-        },
-        {
-          name: "trackingUrl",
-          value: params.get("trackingUrl")
+            "channelCode": "SHOPIFY",
+            "name": "SHOPIFY_API",
+            "channelConnectorParameters": [
+                {
+                    "name": "hostname",
+                    "value": params.get("hostname")
+                },
+                {
+                    "name": "apiKey",
+                    "value": params.get("apiKey")
+                },
+                {
+                    "name": "locationId",
+                    "value": params.get("locationId")
+                },
+                {
+                    "name": "password",
+                    "value": params.get("password")
+                },
+                {
+                    "name": "Email",
+                    "value": params.get("Email")
+                },
+                {
+                    "name": "prefix",
+                    "value": params.get("prefix")
+                },
+                {
+                    "name": "trackingUrl",
+                    "value": params.get("trackingUrl")
+                }
+            ]
         }
-      ]
-    }]
-  }
+    ]
+}
   try {
-    console.log("hitting uniware api",createShopifyChannelUniwareUrl,requestHeaders,channelCreationRequest);
+    console.log("hitting uniware api", createShopifyChannelUniwareUrl, requestHeaders, channelCreationRequest);
     const response = await axios.post(createShopifyChannelUniwareUrl, channelCreationRequest, { headers: requestHeaders });
-    console.log("response", JSON.stringify(response.data));
+    console.log("response is", JSON.stringify(response.data));
     if (response.data.successful) {
-      return response.data;
+      return {"successful":true,"data":response.data};
     }
-    else {
-      return json({"statusCode":response.status,"error":""})
-    }
+    return response.data;
   }
   catch (error) {
-      return json({"error":"Unable to add channel connector details to Uniware due to some Internal Server Error."})
+    console.log(JSON.stringify(error.response.data))
+    return { successful:false, error: `Unable to add channel connector details to Uniware due to some Internal Server Error. ${JSON.stringify(error.message)}` }
   }
 
 }
@@ -178,7 +178,7 @@ export async function getShopifyChannelDetailsUniware(params) {
     "Content-Type": "application/json",
     "Authorization": `bearer ${appUniwareAuth.accessToken}`
   }
-  const channelCreationRequest =
+  const requestBody =
   {
     "channelCode": params.get("channelCode")
   }
@@ -190,27 +190,27 @@ export async function getShopifyChannelDetailsUniware(params) {
       return response.data;
     }
     else {
-      return json({"statusCode":response.status,"successful":false,"error":"Unable to fetch channel Details from Uniware"})
+      return json({ "statusCode": response.status, "successful": false, "error": "Unable to fetch channel Details from Uniware" })
     }
   }
   catch (error) {
-      return json({"successful":false,"error":"Unable to fetch channel Details from Uniware"})
+    return json({ "successful": false, "error": "Unable to fetch channel Details from Uniware" })
   }
 
 }
 
-export async function addChannelConnectorUniware(params) {
+export async function addChannelConnectorUniware(params,channelCode) {
 
-  const appUniwareAuth = findUniwareCred(params.get("hostname"));
-  const addChannelConnectorUrl = `https://${appUniwareAuth.tenantCode}.unicommerce.com/services/rest/v1/channel/addChannelConnector`
+  const appUniwareAuth = await findUniwareCred(params.get("hostname"));
+  const addChannelConnectorUrl = `https://${appUniwareAuth.data.tenantCode}.unicommerce.com/services/rest/v1/channel/addChannelConnector`
   const requestHeaders = {
     "Content-Type": "application/json",
-    "Authorization": `bearer ${appUniwareAuth.accessToken}`
+    "Authorization": `bearer ${appUniwareAuth.data.accessToken}`
   }
-  const channelCreationRequest =
+  const addChannelConnectorRequest =
   {
-    channelConnectors: {
-      channelCode: "SHOPIFY",
+    channelConnector: {
+      channelCode: channelCode,
       name: "SHOPIFY_API",
       channelConnectorParameters: [
         {
@@ -246,17 +246,18 @@ export async function addChannelConnectorUniware(params) {
   }
 
   try {
-    const response = await axios.post(addChannelConnectorUrl, channelCreationRequest, { headers: requestHeaders });
+    console.log(addChannelConnectorUrl,requestHeaders,addChannelConnectorRequest);
+    const response = await axios.post(addChannelConnectorUrl, addChannelConnectorRequest, { headers: requestHeaders });
     console.log("response", JSON.stringify(response.data));
     if (response.data.successful) {
       return response.data;
     }
     else {
-      return json({"successful":false,"statusCode":response.status,"error":"Unable to update channel Connectors on uniware"})
+      return { "successful": false, "statusCode": response.status, "error": "Unable to update channel Connectors on uniware" }
     }
   }
   catch (error) {
-      return json({"successful":false,"error":"Unable to add channel connector details to Uniware due to some Internal Server Error."})
+    return { "successful": false, "error": "Unable to add channel connector details to Uniware due to some Internal Server Error." }
   }
 
 
@@ -264,16 +265,16 @@ export async function addChannelConnectorUniware(params) {
 
 export async function authenticateUser(username, password, tenantCode) {
   console.log("password is", password)
-  console.log("username is ",username)
-  console.log("tenantCode is ",tenantCode);
+  console.log("username is ", username)
+  console.log("tenantCode is ", tenantCode);
   const serverUrl = `https://${tenantCode}.unicommerce.com/oauth/token`;
   try {
     const uniwareAuthResponse = await axios.get(serverUrl,
       {
         headers: {
-          'Content-Type': 'Application/json',      
+          'Content-Type': 'Application/json',
         },
-        params : {
+        params: {
           'grant_type': "password",
           'client_id': "my-trusted-client",
           'username': username,
@@ -283,7 +284,7 @@ export async function authenticateUser(username, password, tenantCode) {
         validateStatus: (status) => status >= 200 && status < 600
       }
     )
-    console.log("uniwareAuth response is ",JSON.stringify(uniwareAuthResponse.data));
+    console.log("uniwareAuth response is ", JSON.stringify(uniwareAuthResponse.data));
     return { data: uniwareAuthResponse.data, status: uniwareAuthResponse.status };
 
   }
@@ -310,12 +311,12 @@ export async function authenticateUser(username, password, tenantCode) {
 
 }
 
-export async function createNewUniwareTenantShopifyChannel(shopDetails,accessToken) {
+export async function createNewUniwareTenantShopifyChannel(shopDetails, accessToken) {
 
   const shopifyUniwareTenantResponse = await findShopifyUniwareTenant(shopDetails);
 
-  if(!shopifyUniwareTenantResponse.successful) {
-    return {successful : false}
+  if (!shopifyUniwareTenantResponse.successful) {
+    return { successful: false }
   }
 
   const shopifyUniwareTenantDetails = shopifyUniwareTenantResponse.data;
@@ -360,11 +361,11 @@ export async function createNewUniwareTenantShopifyChannel(shopDetails,accessTok
             {
               name: "apiKey",
               value: process.env.SHOPIFY_API_KEY
-            }, 
+            },
             {
               name: "password",
               value: accessToken
-            }, 
+            },
             {
               name: "hostname",
               value: shopDetails
@@ -378,12 +379,12 @@ export async function createNewUniwareTenantShopifyChannel(shopDetails,accessTok
               value: "TRUE"
             },
             {
-              name:"prefix",
-              value:"prefix"
+              name: "prefix",
+              value: "prefix"
             },
             {
-              name:"Email",
-              value:"TRUE"
+              name: "Email",
+              value: "TRUE"
             }
           ]
         }]
@@ -393,11 +394,49 @@ export async function createNewUniwareTenantShopifyChannel(shopDetails,accessTok
 
   try {
     const response = await axios.post(serviceUrl, requestBody, { headers: requestHeaders });
-    console.log("tenant creation response is ",response.data);
+    console.log("tenant creation response is ", response.data);
     return response;
-  }catch(error)
-  {
-    console.log("error in tenantCreation",error)
-    return {successful:false}
+  } catch (error) {
+    console.log("error in tenantCreation", error)
+    return { successful: false }
   }
+}
+
+export async function getUniwareTenantType(tenantCode, shopDetails) {
+
+  console.log("tenantCode is ", tenantCode);
+  const shopUniwareAuthDetails = await findUniwareCred(shopDetails);
+  if (!shopUniwareAuthDetails.successful) {
+    return shopUniwareAuthDetails;
+  }
+
+  const authToken = shopUniwareAuthDetails.data.accessToken;
+
+  const requestBody = {
+    "tenantCode": tenantCode
+  };
+
+  const requestHeaders = {
+    "Content-Type": "application/json",
+    "Authorization": `bearer ${authToken}`
+  }
+
+  const serverUrl = `https://${tenantCode}.unicommerce.com/services/rest/v1/system/tenant/getTenantDetails`;
+
+
+  try {
+    const uniwareTenantTypeResponse = await axios.post(serverUrl, requestBody, { headers: requestHeaders });
+  
+    console.log("uniwareTenantTypeResponse response is ", JSON.stringify(uniwareTenantTypeResponse.data));
+
+    if (!uniwareTenantTypeResponse.data.successful) {
+      return uniwareTenantTypeResponse.data;
+    }
+    return { successful: true, data: uniwareTenantTypeResponse.data.profile };
+
+  }
+  catch (error) {
+    return { successful: false, error: `Error while fetch uniware tenant Type ${error.message}` }
+  }
+
 }
