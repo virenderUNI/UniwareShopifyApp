@@ -1,5 +1,5 @@
-import { createApplicationRecurrentCharge, getLocationForShop, handleApplicationCharge } from './apiClient';
-import { authenticateUser } from './uniwareService.server';
+import { createApplicationRecurrentCharge, getLocationForShop, handleApplicationCharge } from './apiClient.server';
+import { authenticateUser, getUniwareTenantType } from './uniwareService.server';
 import {
     createShopifyUniwareTenant,
     createUniwareTenantAuth,
@@ -32,7 +32,15 @@ async function createTenantIfNotExists(shopDetails, tenantCode, session) {
     const tenantDetailsResponse = await findShopifyUniwareTenant(shopDetails);
 
     if (tenantDetailsResponse.successful) {
-        return {"successful":true,"data":{chargeId:tenantDetailsResponse.data.chargeId || null}};
+        return { "successful": true, "data": { chargeId: tenantDetailsResponse.data.chargeId || null } };
+    }
+
+    const checkUniwareTenantTypeResponse = await getUniwareTenantType(tenantCode, shopDetails);
+
+    console.log("checkUniwareTenantTypeResponse is ", checkUniwareTenantTypeResponse)
+
+    if (!checkUniwareTenantTypeResponse) {
+        return checkUniwareTenantTypeResponse;
     }
 
     const locationResponse = await getLocationForShop(shopDetails, session.accessToken);
@@ -49,39 +57,22 @@ async function createTenantIfNotExists(shopDetails, tenantCode, session) {
         pincode: singleLocationDataShop.zip || '',
         state: singleLocationDataShop.province || '',
         country: singleLocationDataShop.country || '',
-        locationId: singleLocationDataShop.id.toString() || ''
+        locationId: singleLocationDataShop.id.toString() || '',
+        tenantType: checkUniwareTenantTypeResponse.data.tenantType
     };
 
-    try{
+    try {
         const response = await createShopifyUniwareTenant(tenantParams);
-        if(response.successful)
-        {
-            return {"successful":true,"data":{chargeId:null}}
+        if (response.successful) {
+            return { "successful": true, "data": { chargeId: null, tenantType: checkUniwareTenantTypeResponse.data.tenantType } }
         }
     }
-    catch(error){
-        return {"successful":false,"error":`Unable to save tenantCreationDetails ${error.message || 'Unknown error'}`}
+    catch (error) {
+        return { "successful": false, "error": `Unable to save tenantCreationDetails ${error.message || 'Unknown error'}` }
     }
     return null;
 
 }
-
-
-// async function handleApplicationCharge(admin, session) {
-//     try {
-//         const responseJson = await createApplicationRecurrentCharge(admin, session);
-//         console.log(responseJson);
-//         const userErrors = responseJson.data.appSubscriptionCreate.userErrors;
-
-//         if (userErrors.length > 0) {
-//             throw new Error(userErrors.map(error => error.message).join(', '));
-//         }
-
-//         return { "successful":true,"data":{ confirmationUrl: responseJson.data.appSubscriptionCreate.confirmationUrl ,chargeId : null}};
-//     } catch (error) {
-//         throw new Error("Error " + JSON.stringify(error));
-//     }
-// }
 
 
 export async function createUniwareLoginSession(tenantCode, username, password, admin, session) {
@@ -94,20 +85,22 @@ export async function createUniwareLoginSession(tenantCode, username, password, 
             await handleUniwareAuth(username, password, tenantCode, shopDetails);
         }
 
-
         const createTenantVoResponse = await createTenantIfNotExists(shopDetails, tenantCode, session);
 
         if (createTenantVoResponse.successful) {
-            if(createTenantVoResponse.data.chargeId !== null)
-            {
+            if (createTenantVoResponse.data.chargeId !== null) {
                 return createTenantVoResponse;
+            }
+            console.log(createTenantVoResponse.data);
+            if (createTenantVoResponse.data.tenantType != 'ENTERPRISE') {
+                return { "successful": false, error: "This is an Enterprise Tenant.Please continue using shopify custom app for your store only." }
             }
             const result = await handleApplicationCharge(admin, session);
             return result;
         }
         return createTenantVoResponse;
     } catch (error) {
-        return { "successful":false ,  error: error.message };
+        return { "successful": false, error: error.message };
     }
 }
 

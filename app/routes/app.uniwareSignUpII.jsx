@@ -3,9 +3,9 @@ import { authenticate } from '../shopify.server';
 import { Button, TextField, Card, Layout } from '@shopify/polaris';
 import { useEffect, useState } from 'react';
 import { useActionData, useLoaderData } from '@remix-run/react';
-import { generateTenantCode, validateTenantCode } from '../services/signUpService';
+import { generateTenantCode, validateTenantCode } from '../services/signUpService.server';
 import useSessionStorage from '../customHooks/useSessionStorage';
-import { getLocationForShop } from '../services/apiClient';
+import { getLocationForShop } from '../services/apiClient.server';
 
 export const loader = async ({ request }) => {
 

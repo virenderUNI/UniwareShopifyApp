@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import { createShopifyUniwareTenant, findShopifyUniwareTenant, updateShopifyUniwareTenant } from "../mao/uniwareSessionMao.server";
 import { checkAccessUrlAvailability, checkUserAvailability } from "./uniwareService.server";
-import { handleApplicationCharge } from "./apiClient";
+import { handleApplicationCharge } from "./apiClient.server";
 
 
 export async function validateEmailAndPhone(email, phone, shopDetails) {

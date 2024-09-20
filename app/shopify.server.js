@@ -34,7 +34,3 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
-export async function getShopifySession(request) {
-  const { admin } = await shopify.authenticate.admin(request);
-  return { shopDetails: admin.shop, accessToken: admin.accessToken };
-}

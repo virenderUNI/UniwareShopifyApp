@@ -1,6 +1,7 @@
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import { findShopifyUniwareTenant,updateChargeIdShopifyUniware, updateShopifyUniwareTenant } from "../mao/uniwareSessionMao.server";
+import { findShopifyUniwareTenant, updateChargeIdShopifyUniware, updateShopifyUniwareTenant } from "../mao/uniwareSessionMao.server";
+import axios from "axios";
 
 export const loader = async ({ request }) => {
     const { session, redirect } = await authenticate.admin(request)
@@ -17,24 +18,29 @@ export const loader = async ({ request }) => {
     }
 
     // save chargeId to shopifyProxyMongo collection 
-    // const response = await saveChargeIdProxy(chargeId,session.shop)
-    // if (response.error) {
-    //     redirect(`/app?message=${response.error}`)
-    // }
+    const response = await saveChargeIdProxy(chargeId,session.shop,session.accessToken)
+    console.log("response save charge id is",response.successful);
+    if (!response.successful) {
+        console.log("redirecting to app")
+        const errorMessage = "Unable to create charge Id as user declined to accept charges"
+        throw redirect(`/app?message=${errorMessage}`)
+    }
     try {
-        updateChargeIdShopifyUniware(session.shop,chargeId,session.accessToken)
+        updateChargeIdShopifyUniware(session.shop, chargeId, session.accessToken)
         const shopifyUniwareTenant = await findShopifyUniwareTenant(session.shop)
-        if(!shopifyUniwareTenant.successful) {
+        if (!shopifyUniwareTenant.successful) {
             redirect(`/app?message=${shopifyUniwareTenant.error}`)
         }
-        console.log("updating tenant status to running");
-        const updatedTenantStatus = {tenantSetupStatus:"RUNNING"}
-        const updateResponse = await updateShopifyUniwareTenant(session.shop,updatedTenantStatus,shopifyUniwareTenant.data.version);
-        console.log("updateResponse for tenant to running",updateResponse);
-        if(!updateResponse.successful)
-        {
+        console.log(shopifyUniwareTenant.data.tenantSetupStatus );
+        if (shopifyUniwareTenant.data.tenantSetupStatus == "INITIATED") {
+            console.log("updating tenant status to running");
+            const updatedTenantStatus = { tenantSetupStatus: "RUNNING" }
+            const updateResponse = await updateShopifyUniwareTenant(session.shop, updatedTenantStatus, shopifyUniwareTenant.data.version);
+            console.log("updateResponse for tenant to running", updateResponse);
+            if (!updateResponse.successful) {
 
-            redirect(`/app?message=${shopifyUniwareTenant.error}`)
+                redirect(`/app?message=${shopifyUniwareTenant.error}`)
+            }
         }
 
     } catch (error) {
@@ -45,30 +51,33 @@ export const loader = async ({ request }) => {
     return redirect(`/app/channel`);
 }
 
-async function saveChargeIdProxy(chargeId,shopifyDetails,accessToken) {
-    const shopifyProxyUrl = "/shopify/app/create/chargeId";
-    const requestHeaders = {
-        "app-client-id": process.env.SHOPIFY_API_KEY,
-        "app-client-secret": "c844162e186bbe5bc93bbf68d5e63cd1"
-    }
-    const shopifyUniwareTenant = await findShopifyUniwareTenant(shopifyDetails)
-    const shopChargeIdRequest = {
-        "chargeId": chargeId,
-        "shopName": shopifyUniwareTenant.data.shopDomain,
-        "tenantCode": shopifyUniwareTenant.data.tenantCode,
-        "shopifyAccessToken": accessToken
-    }
+async function saveChargeIdProxy(chargeId, shopifyDetails, accessToken) {
+    console.log(chargeId,accessToken)
+    const shopName = shopifyDetails.split('.')[0];
+    const shopifyUniwareTenant = await findShopifyUniwareTenant(shopifyDetails);
+    console.log(shopName);
+    console.log(shopifyUniwareTenant.data.tenantCode);
 
     try {
-        const response = await axios.post(shopifyProxyUrl, shopChargeIdRequest, requestHeaders);
-        if(!response.data.successful)
-        {
-            return json({"error":response.data.errors.map(e =>e.message).join(','),"statusCode":response.status})
-        }
+        
+        const response = await axios.post('http://localhost:8181/shopify/app/create/chargeId', {
+            "chargeId": chargeId,
+            "shopName": shopName,
+            "tenantCode": shopifyUniwareTenant.data.tenantCode,
+            "shopifyAccessToken": accessToken
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'app-client-id': process.env.SHOPIFY_API_KEY,
+                'app-client-secret': process.env.SHOPIFY_API_SECRET,
+            },
+        })
+        console.log("response saving charge id is ",response.data)
+        return response.data;
     }
     catch (error) {
-        return json({ error: "Unable to save charge Id to proxy service.", status: 500 })
+        console.log(error.response.data)
+        return { "successful":false, error: "Unable to save charge Id to proxy service."}
     }
-    return response.data;
 
 }
