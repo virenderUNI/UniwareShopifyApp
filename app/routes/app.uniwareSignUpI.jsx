@@ -102,6 +102,10 @@ export default function uniwareSignUpSignUpI() {
           />
           <Button submit primary>Next</Button>
         </Form>
+          <p style={{ textAlign: "center", marginTop: "1rem" }}>
+            Already have an account? <a href="/app/uniwareLogin">Log In</a>
+          </p>
+    
 
       </div>
     </div>
@@ -141,7 +145,7 @@ const styles = {
     marginLeft: "3rem",
   },
   textBelowLogo: {
-    height: "168px",
+    // height: "168px",
     width: "80%",
     fontWeight: "500",
     lineHeight: "3rem",
