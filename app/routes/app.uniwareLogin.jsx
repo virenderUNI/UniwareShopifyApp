@@ -62,6 +62,10 @@ export default function Login() {
     }
   }, [actionData]);
 
+  const handleSignUpClick = () => {
+    redirect.dispatch(Redirect.Action.ADMIN_PATH, "/app/uniwareSignUpI");
+ };
+ 
   return (
     <div style={styles.container}>
       <div style={styles.leftSection}>
@@ -114,7 +118,19 @@ export default function Login() {
           </Button>
         </Form>
         <p style={{ textAlign: "center", marginTop: "1rem" }}>
-            Don't have an account? <a href="/app/uniwareSignUpI">Sign Up</a>
+          Don't have an account?{" "}
+          <button
+            style={{
+              background: "none",
+              border: "none",
+              color: "#1F87C2",
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+            onClick={handleSignUpClick}
+          >
+            Sign Up
+          </button>
         </p>
     
       </div>
