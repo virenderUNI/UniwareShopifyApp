@@ -39,10 +39,12 @@ export default function Login() {
 
   const shopify = useAppBridge();
   const redirect = Redirect.create(shopify);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     event.target.submit();
   };
+  
   useEffect(() => {
     if (actionData && actionData.confirmationUrl) {
       if (linkRef.current) {
@@ -84,7 +86,7 @@ export default function Login() {
           <TextField
             label={<span style={styles.customLabel}>Email</span>}
             value={email}
-            onChange={(value) => setUsername(value)}
+            onChange={(value) => setEmail(value)}
             placeholder="Enter your Username"
             type="text"
             name="email"
@@ -93,8 +95,8 @@ export default function Login() {
           <TextField
             label={<span style={styles.customLabel}>Phone</span>}
             value={phone}
-            onChange={(value) => setPassword(value)}
-            placeholder="Enter your Password"
+            onChange={(value) => setPhone(value)}
+            placeholder="Enter your phone"
             type="phone"
             name="phone"
           />
