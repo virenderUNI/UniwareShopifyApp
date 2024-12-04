@@ -57,15 +57,15 @@ export default function Login() {
   useEffect(() => {
     if (actionData && actionData.confirmationUrl) {
       if (linkRef.current) {
-        linkRef.current.click(); // Trigger the click on the Link
+        linkRef.current.click(); 
       }
     }
   }, [actionData]);
 
   const handleSignUpClick = () => {
-    redirect.dispatch(Redirect.Action.ADMIN_PATH, "/app/uniwareSignUpI");
- };
- 
+    navigate("/app/uniwareSignUpI"); 
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.leftSection}>
