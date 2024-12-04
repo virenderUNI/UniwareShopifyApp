@@ -9,6 +9,23 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { createUniwareLoginSession } from "../services/loginService.server";
 import  {validateEmailAndPhone} from "../services/signUpService.server";
+import {useSessionStorage} from '../customHooks/useSessionStorage';
+
+export const loader = async ({ request }) => {
+
+    const {session, admin} = await authenticate.admin(request);
+    const locationResponse = await getLocationForShop(session.shop,session.accessToken);
+    const phone = locationResponse.data.locations[0].phone;
+    const response = await generateTenantCode(session.shop,phone);
+    console.log(response)
+    if(response.successful)
+    {
+        const tenantCode = response.data.tenantCode;
+        console.log("tenantCode is" , tenantCode)
+        return json({ tenantCode });
+    }
+    return json({tenantCode:""})
+};
 
 export const action = async ({ request }) => {
     const { session, admin, redirect } = await authenticate.admin(request);
