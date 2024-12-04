@@ -9,9 +9,9 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { createUniwareLoginSession } from "../services/loginService.server";
 import  {validateEmailAndPhone} from "../services/signUpService.server";
-import {useSessionStorage} from '../customHooks/useSessionStorage';
 import { getLocationForShop } from '../services/apiClient.server';
 import { generateTenantCode} from '../services/signUpService.server';
+import useSessionStorage from '../customHooks/useSessionStorage';
 
 export const loader = async ({ request }) => {
 
