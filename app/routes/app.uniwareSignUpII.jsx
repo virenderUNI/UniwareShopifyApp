@@ -79,41 +79,42 @@ export const action = async ({ request }) => {
 // };
 
 
-export default function uniwareSignUpSignUpII() {
-   const loaderData = useLoaderData();
-   const [tenantCode, setTenantCode] = useSessionStorage('tenantCode', loaderData.tenantCode || '');
-   const actionData = useActionData();
+// export default function uniwareSignUpSignUpII() {
+//    const loaderData = useLoaderData();
+//    const [tenantCode, setTenantCode] = useSessionStorage('tenantCode', loaderData.tenantCode || '');
+//    const actionData = useActionData();
 
 
-   useEffect(() => {
-       if (actionData?.tenantCode  ) {
-           setTenantCode(actionData.phone);
-       }
-   }, [actionData, setTenantCode]);
+//    useEffect(() => {
+//        if (actionData?.tenantCode  ) {
+//            setTenantCode(actionData.phone);
+//        }
+//    }, [actionData, setTenantCode]);
 
 
-   return (
-       <Layout>
-           <Layout.Section>
-               <Card title="Enter Tenant Code" sectioned>
-                   <form method="post">
-                       <div style={styles.inputContainer}>
-                       <TextField
-                           label="Tenant Code"
-                           value={tenantCode}
-                           onChange={(value) => setTenantCode(value)}
-                           type="text"
-                           name="tenantCode"
-                       />
-                       </div>
-                       <Button submit primary>Next</Button>
-                   </form>
-                   {actionData?.error && <p>{actionData.error}</p>}
-               </Card>
-           </Layout.Section>
-       </Layout>
-   );
-}
+//    return (
+//        <Layout>
+//            <Layout.Section>
+//                <Card title="Enter Tenant Code" sectioned>
+//                    <form method="post">
+//                        <div style={styles.inputContainer}>
+//                        <TextField
+//                            label="Tenant Code"
+//                            value={tenantCode}
+//                            onChange={(value) => setTenantCode(value)}
+//                            type="text"
+//                            name="tenantCode"
+//                        />
+//                        </div>
+//                        <Button submit primary>Next</Button>
+//                    </form>
+//                    {actionData?.error && <p>{actionData.error}</p>}
+//                </Card>
+//            </Layout.Section>
+//        </Layout>
+//    );
+// }
+
 export default function uniwareSignUpSignUpII() {
     const loaderData = useLoaderData();
     const [tenantCode, setTenantCode] = useSessionStorage('tenantCode', loaderData.tenantCode || '');
@@ -170,7 +171,7 @@ export default function uniwareSignUpSignUpII() {
             <TextField
               label={<span style={styles.customLabel}>Tenant Code</span>}
               value={tenantCode}
-              onChange={(value) => setPassword(value)}
+              onChange={(value) => setTenantCode(value)}
               placeholder="Enter your Tenant"
               type="tenantCode"
               name="tenantCode"
