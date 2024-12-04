@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, TextField, Card, Layout } from "@shopify/polaris";
-import { Form, useNavigate, useLoaderData, Link } from "@remix-run/react";
+import { Form, useLoaderData, Link } from "@remix-run/react";
 import { json, redirect as redirectRemix } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import { getShopifyPlanDetails } from "../services/apiClient.server";
@@ -8,13 +8,14 @@ import { useActionData } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { createUniwareLoginSession } from "../services/loginService.server";
-
+import  {validateEmailAndPhone} from "../services/signUpService.server";
 
 export const action = async ({ request }) => {
     const { session, admin, redirect } = await authenticate.admin(request);
     const formData = new URLSearchParams(await request.text());
     const email = formData.get('email');
     const phone = formData.get('phone');
+    debugger;
     const response = await validateEmailAndPhone(email, phone, session.shop);
     console.log(process.env.SHOPIFY_API_KEY)
     console.log(session.accessToken);
@@ -29,11 +30,10 @@ export const action = async ({ request }) => {
  };
  
  
-export default function Login() {
+export default function uniwareSignUpSignUpI() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const actionData = useActionData();
-  const navigate = useNavigate();
   const loaderData = useLoaderData();
   const linkRef = useRef(null);
 
@@ -44,7 +44,7 @@ export default function Login() {
     event.preventDefault();
     event.target.submit();
   };
-  
+
   useEffect(() => {
     if (actionData && actionData.confirmationUrl) {
       if (linkRef.current) {
@@ -87,7 +87,7 @@ export default function Login() {
             label={<span style={styles.customLabel}>Email</span>}
             value={email}
             onChange={(value) => setEmail(value)}
-            placeholder="Enter your Username"
+            placeholder="Enter your email"
             type="text"
             name="email"
             autoComplete="email"
