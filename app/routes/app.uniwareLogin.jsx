@@ -63,8 +63,7 @@ export default function Login() {
   }, [actionData]);
 
   const handleSignUpClick = () => {
-    // navigate("/app/uniwareSignUpI"); 
-    redirect("/app/uniwareSignUpI");
+    navigate("/app/uniwareSignUpI"); 
   };
 
   return (
