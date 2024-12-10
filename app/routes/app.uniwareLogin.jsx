@@ -20,35 +20,41 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  const { session, admin } = await authenticate.admin(request);
-
+  const { session, admin ,redirect } = await authenticate.admin(request);
   const formData = await request.formData();
   const username = formData.get("username");
   const password = formData.get("password");
-
-  const response = await createUniwareLoginSession(
-    username,
-    password,
-    admin,
-    session
-  );
-  if (response.successful) {
-    if (response.data.confirmationUrl) {
-      return { successful: true, confirmationUrl: response.data.confirmationUrl };
-    } else if (response.data.chargeId) {
-      return redirectRemix(`/app/processChargeCreation?chargeId=${response.data.charge_id}`);
+  const actionType = formData.get("actionType"); 
+ 
+  if(actionType == 'login'){
+    const response = await createUniwareLoginSession(
+      username,
+      password,
+      admin,
+      session
+    );
+    if (response.successful) {
+      if (response.data.confirmationUrl) {
+        return { successful: true, confirmationUrl: response.data.confirmationUrl };
+      } else if (response.data.chargeId) {
+        return redirect(`/app/processChargeCreation?chargeId=${response.data.charge_id}`);
+      }
     }
+    return response;
+  }else if(actionType == 'signup') {
+    return redirect("/app/uniwareSignUpI");
   }
-  console.log("response is ", response.error);
-  return response;
+  // console.log("response is ", response.error);
 };
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  // const [actionType, setActionType] = useState("login"); // Track action type
   const actionData = useActionData();
   const navigate = useNavigate();
   const loaderData = useLoaderData();
+  const formRef = useRef(); 
   const linkRef = useRef(null);
 
   const shopify = useAppBridge();
@@ -62,8 +68,11 @@ export default function Login() {
     }
   }, [actionData]);
 
-  const handleSignUpClick = () => {
-    navigate("/app/uniwareSignUpI"); 
+  const handleSignUpClick = (e) => {
+    e.preventDefault(); 
+    const actionTypeInput = formRef.current.querySelector('input[name="actionType"]');
+    actionTypeInput.value = "signup";
+    formRef.current.submit();
   };
 
   return (
@@ -79,11 +88,24 @@ export default function Login() {
 
         <p style={styles.trustedText}>Trusted by 3600+ Brands</p>
         <div style={styles.brandLogos}>
-          <img src="/path-to-tcns-logo.png" alt="TCNS" style={styles.logo} />
-          <img src="/path-to-lenskart-logo.png" alt="Lenskart" style={styles.logo} />
-          <img src="/path-to-best-seller-logo.png" alt="Bestseller" style={styles.logo} />
-          <img src="/path-to-mamaearth-logo.png" alt="Mamaearth" style={styles.logo} />
-          <img src="/path-to-boat-logo.png" alt="Boat" style={styles.logo} />
+          <div>
+            <img src="/images/tcns.jpeg" alt="TCNS" style={styles.logo} />
+          </div>
+          <div>
+            <img src="/images/lenskart.png" alt="Lenskart" style={styles.logo} />
+          </div>
+          <div>
+            <img src="/images/bestseller.png" alt="Bestseller" style={styles.logo} />
+          </div>
+          <div>
+            <img src="/images/uc.png" alt="Boat" style={styles.logo} />
+          </div>
+          <div>
+            <img src="/images/mamaearth.png" alt="Mamaearth" style={styles.logo} />
+          </div>
+          <div>
+            <img src="/images/boat.png" alt="Boat" style={styles.logo} />
+          </div>
         </div>
       </div>
 
@@ -95,7 +117,9 @@ export default function Login() {
           <p style={styles.instruction}>Sign Up below to create a new account.</p>
         </div>
 
-        <Form method="post" style={styles.formContainer}>
+        <Form method="post" ref={formRef} style={styles.formContainer}>
+          <input type="hidden" name="actionType" value="login" />
+
           <TextField
             label={<span style={styles.customLabel}>Username</span>}
             value={username}
@@ -113,7 +137,7 @@ export default function Login() {
             type="password"
             name="password"
           />
-          <Button submit primary fullWidth>
+          <Button submit primary fullWidth> 
             Log In
           </Button>
         </Form>
@@ -132,6 +156,23 @@ export default function Login() {
             Sign Up
           </button>
         </p>
+        <div style={styles.socialMedia}>
+            <a href="https://www.linkedin.com/company/unicommerce/?originalSubdomain=in" target="_blank" rel="noopener noreferrer">
+                <img src="/images/linkedin.png" alt="LinkedIn" style={styles.socialIcon} />
+            </a>
+            <a href="https://www.facebook.com/unicommerce/" target="_blank" rel="noopener noreferrer">
+                <img src="/images/facebook.png" alt="Facebook" style={styles.socialIcon} />
+            </a>
+            <a href="https://www.youtube.com/channel/UCxghboEldMtQRVJxqCq6UHg" target="_blank" rel="noopener noreferrer">
+                <img src="/images/youtube.jpg" alt="YouTube" style={styles.socialIcon} />
+            </a>
+            <a href="https://www.instagram.com/unicommerce_esolutions/?hl=en" target="_blank" rel="noopener noreferrer">
+                <img src="/images/instagram.jpg" alt="Twitter" style={styles.socialIcon} />
+            </a>
+            <a href="https://x.com/Unicommerce_?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" target="_blank" rel="noopener noreferrer">
+                <img src="/images/twitter.jpg" alt="Twitter" style={styles.socialIcon} />
+            </a>
+        </div>
     
       </div>
     </div>
@@ -184,14 +225,39 @@ const styles = {
     marginTop: "1rem",
   },
   brandLogos: {
-    display: "flex",
-    gap: "1rem",
-    justifyContent: "flex-start",
-    flexWrap: "wrap",
-    marginTop: "1rem",
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)", 
+    gap: "0.5rem", 
+    width: "480px", 
+    height: "85px",
+    borderRadius: "8px",
+    overflow: "hidden", 
+    alignItems: "center", 
+    justifyItems: "center", 
+    backgroundColor: "#f9f9f9", 
+    padding: "0.5rem", 
+    marginTop: "1rem"
   },
   logo: {
-    height: "40px",
+    maxWidth: "100%", 
+    maxHeight: "100%", 
+    objectFit: "contain", 
+  },
+  socialMedia: {
+    position: "absolute",
+    bottom: "2rem", // Positions 2rem from the bottom of rightSection
+    left: "50%", // Positions it horizontally in the middle
+    transform: "translateX(-50%)", // Adjusts for centering
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  socialIcon: {
+    width: "30px !important",
+    height: "26px !important",
+    objectFit:"contain",
+    cursor: "pointer",
   },
   rightSection: {
     width: "40%",
@@ -200,6 +266,10 @@ const styles = {
     borderRadius: "10px",
     padding: "2rem",
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column", // Ensures child elements stack vertically
+    // justifyContent: "space-between",
+    position: "relative"
   },
   header: {
     display: "flex",

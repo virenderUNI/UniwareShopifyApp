@@ -60,7 +60,7 @@ export async function findShopifyUniwareTenant(shop) {
         const shopifyUniwareTenant = await prisma.shopUniwareTenant.findUnique({
             where: { shopDomain: shop },
         });
-        console.log("shopifyUniwareTenant Details are", shopifyUniwareTenant);
+        console.log("shopifyUniwareTenant Details are ", shopifyUniwareTenant);
         return shopifyUniwareTenant ? { successful: true, data: shopifyUniwareTenant } : { successful: false, data: null, error: 'Tenant not found' };
     } catch (error) {
         console.error('Error finding Shopify Uniware tenant:', error);

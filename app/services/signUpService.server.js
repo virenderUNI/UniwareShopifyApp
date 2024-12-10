@@ -3,6 +3,30 @@ import { createShopifyUniwareTenant, findShopifyUniwareTenant, updateShopifyUniw
 import { checkAccessUrlAvailability, checkUserAvailability } from "./uniwareService.server";
 import { handleApplicationCharge } from "./apiClient.server";
 
+let sharedState = {
+    shouldRunSignUpIILoader: '1'
+};
+
+let confirmationUrl = {
+    url: ''
+};
+
+// Function to update shared state
+
+export const setConfirmationUrl = (state) => {
+    confirmationUrl = {...state};
+};
+
+export const getConfirmationUrl = () => confirmationUrl ;
+
+export const setSharedState = (state) => {
+    sharedState = { ...sharedState, ...state };
+};
+
+
+
+// Function to retrieve shared state
+export const getSharedState = () => sharedState;
 
 export async function validateEmailAndPhone(email, phone, shopDetails) {
     if (!email || !phone) {
@@ -51,18 +75,19 @@ export async function validateEmailAndPhone(email, phone, shopDetails) {
 }
 
 export async function validateTenantCode(shopDetails, tenantCode) {
-
+    console.log("in function validateTenantCode, checking tenant code value ",tenantCode)
     if (!tenantCode) {
         return { successful: false, error: 'Email and phone are required.' };
     }
-
     try {
+        console.log(" pre - validating tenantCode received : ",tenantCode)
         const shopifyUniwareTenantResponse = await findShopifyUniwareTenant(shopDetails);
+        console.log("post - validating tenantCode received : ",tenantCode)
         if (shopifyUniwareTenantResponse.successful ) {
             if( shopifyUniwareTenantResponse.data.tenantSetupStatus === "RUNNING") {
                 return {successful:false, error:"setup already in progress"}
             }
-            console.log("updating tenantCode")
+            console.log("updating tenantCode  : ",tenantCode)
             const shopifyUniwareTenant = shopifyUniwareTenantResponse.data;
             const checkAvailabilityResponse = await checkAccessUrlAvailability(tenantCode, shopifyUniwareTenant.phone)
             console.log("checkAvailabilityResponse is ",checkAvailabilityResponse);
