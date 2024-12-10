@@ -152,10 +152,11 @@ export function generateUniqueId() {
 export async function handleApplicationCharge(admin, session) {
   try {
       const responseJson = await createApplicationRecurrentCharge(admin, session);
-      console.log(responseJson);
+      console.log(" handling creating application charge response",responseJson);
       const userErrors = responseJson.data.appSubscriptionCreate.userErrors;
 
       if (userErrors.length > 0) {
+          console.log("errors are :",userErrors.map(error => error.message).join(', '));
           throw new Error(userErrors.map(error => error.message).join(', '));
       }
 

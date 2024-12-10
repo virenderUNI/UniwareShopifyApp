@@ -72,7 +72,7 @@ export async function checkAccessUrlAvailability(tenantCode, phone) {
       };
 
       const response = await axios.post(serviceUrl, requestBody, { headers: requestHeaders });
-      console.log("response", JSON.stringify(response.data));
+      console.log("check access url Availability response", JSON.stringify(response.data));
       const responseJson = response.data;
 
       if (responseJson.successful) {

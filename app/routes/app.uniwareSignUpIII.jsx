@@ -1,14 +1,22 @@
 import { json, redirect } from '@remix-run/node';
 import { authenticate } from '../shopify.server';
 import { Button, TextField, Card, Layout, Toast } from '@shopify/polaris';
-import { useState } from 'react';
-import { useNavigate, useActionData, useLoaderData } from '@remix-run/react';
-import { createApplicationRecurrentCharge, getLocationForShop } from '../services/apiClient.server';
+import { useState, useEffect } from 'react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { saveTenantCreationParams } from '../services/signUpService.server';
+import { setSharedState } from "../services/signUpService.server";
+import { getLocationForShop } from '../services/apiClient.server';
+import { log } from 'console';
+import { Redirect } from "@shopify/app-bridge/actions";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import createApp from '@shopify/app-bridge';
+import {setConfirmationUrl} from "../services/signUpService.server";
+
+
 
 export const loader = async ({ request }) => {
-
-    const { session, admin } = await authenticate.admin(request);
+    setSharedState({ shouldRunSignUpIILoader: '2' });
+    const { session, admin,redirect } = await authenticate.admin(request);
     const locationResponse = await getLocationForShop(session.shop, session.accessToken);
     const singleLocationDataShop = locationResponse.data.locations[0];
 
@@ -22,6 +30,7 @@ export const loader = async ({ request }) => {
         locationId: singleLocationDataShop.id || ''
     };
     console.log("tenantCreationParams are ",tenantCreationParams);
+    // redirect("https://uniwaredevstore.myshopify.com/admin/charges/192176947201/27817803928/RecurringApplicationCharge/confirm_recurring_application_charge?signature=BAh7BzoHaWRsKwiYABJ6BgA6EmF1dG9fYWN0aXZhdGVU--bfe18e9f0fbcd1c00e157a1432831f029b522aa1",{target:"_parent"})
     return tenantCreationParams;
 };
 
@@ -47,16 +56,19 @@ export const action = async ({ request }) => {
         
         const response = await saveTenantCreationParams(session, tenantCreationParams,admin);
         if(response.successful) {
-            return {successful:true,"confirmationUrl": response.data.confirmationUrl}
+            setConfirmationUrl({url:response.data.confirmationUrl});
+            // redirect(response.data.confirmationUrl, { target: "_parent" });
+             return redirect('/app/uniwareConfirmation');
+            // return {successful:true,"confirmationUrl": response.data.confirmationUrl}
           }
-        throw redirect(applicationChargeResponse.appSubscriptionCreate.confirmationUrl)
+        // throw redirect(applicationChargeResponse.appSubscriptionCreate.confirmationUrl)
     } catch (error) {
         return json({ error: 'Failed to initate tenantCreation' });
     }
 
 };
 
-export default function Step3() {
+export default function uniwareSignUpIII() {
     const loaderData = useLoaderData();
     const [formData, setFormData] = useState(loaderData);
     const [address1, setAddress1] = useState();
@@ -66,8 +78,17 @@ export default function Step3() {
     const [province, setProvince] = useState();
     const [country, setCountry] = useState();
     const actionData = useActionData();
+    console.log("Action Data:", actionData); 
+    const shopify = useAppBridge();
 
-    console.log("formdata ui is",loaderData);
+    useEffect(() => {
+        console.log("USE EFFECT TRIGGERED  ........");
+        if (actionData?.successful && actionData.confirmationUrl) {
+            console.log("Redirecting to confirmation URL:", actionData.confirmationUrl);
+            const redirect = Redirect.create(shopify);
+            redirect.dispatch(Redirect.Action.REMOTE, actionData.confirmationUrl);
+        }
+    }, [actionData]);
 
     return (
         <Layout>
