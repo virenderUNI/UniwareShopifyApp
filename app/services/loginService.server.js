@@ -29,18 +29,21 @@ async function handleUniwareAuth(username, password, tenantCode, shopDetails) {
 
 
 async function createTenantIfNotExists(shopDetails, tenantCode, session) {
-    const tenantDetailsResponse = await findShopifyUniwareTenant(shopDetails);
-
-    if (tenantDetailsResponse.successful) {
-        return { "successful": true, "data": { chargeId: tenantDetailsResponse.data.chargeId || null } };
-    }
-
     const checkUniwareTenantTypeResponse = await getUniwareTenantType(tenantCode, shopDetails);
 
     console.log("checkUniwareTenantTypeResponse is ", checkUniwareTenantTypeResponse)
 
-    if (!checkUniwareTenantTypeResponse) {
+    if (!checkUniwareTenantTypeResponse.successful) {
         return checkUniwareTenantTypeResponse;
+    }
+    if(checkUniwareTenantTypeResponse.successful && checkUniwareTenantTypeResponse.data.tenantType === "ENTERPRISE") {
+        return {"successful":false, tenantType:"ENTERPRISE","error":"Unable to create session as tenant type is ENTERPRISE" };
+    }
+
+    const tenantDetailsResponse = await findShopifyUniwareTenant(shopDetails);
+
+    if (tenantDetailsResponse.successful) {
+        return { "successful": true, "data": { chargeId: tenantDetailsResponse.data.chargeId || null } };
     }
 
     const locationResponse = await getLocationForShop(shopDetails, session.accessToken);
@@ -84,7 +87,7 @@ export async function createUniwareLoginSession(tenantCode, username, password, 
         if (!shopUniwareAuthDetails.successful) {
             await handleUniwareAuth(username, password, tenantCode, shopDetails);
         }
-
+        
         const createTenantVoResponse = await createTenantIfNotExists(shopDetails, tenantCode, session);
 
         if (createTenantVoResponse.successful) {
