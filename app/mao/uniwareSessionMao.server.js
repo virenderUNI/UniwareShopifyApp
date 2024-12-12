@@ -106,17 +106,20 @@ export async function createShopifyUniwareTenant(params) {
 }
 
 export async function updateChargeIdShopifyUniware(shop, chargeId) {
-    console.log("Saving charge Id to database");
+    console.log("Saving charge Id and updating chargesAccepted to true");
 
     try {
         await prisma.shopUniwareTenant.update({
             where: { shopDomain: shop },
-            data: { chargeId }
+            data: {
+                chargeId,  
+                chargesAccepted: true
+            },
         });
-        return { successful: true, message: 'Charge ID updated successfully' };
+        return { successful: true, message: 'Charge ID and chargesAccepted updated successfully' };
     } catch (error) {
         console.error('Error updating charge ID for Shopify Uniware:', error);
-        throw error
+        throw error;
     }
 }
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, TextField, Card, Layout } from "@shopify/polaris";
-import { Form, useLoaderData, Link } from "@remix-run/react";
-import { json, redirect as redirectRemix } from "@remix-run/node";
+import { Button, TextField} from "@shopify/polaris";
+import { Form, useLoaderData } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import { useActionData } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -17,9 +16,9 @@ export const loader = async ({ request }) => {
     const { session, admin ,redirect } = await authenticate.admin(request);
     const shopPlanDetails = await getShopifyPlanDetails(admin);
     if (shopPlanDetails.data.shop.plan.shopifyPlus) {
-      throw redirectRemix("/app/denyLogin");
+      throw redirect("/app/denyLogin");
     }
-    return json({ shopDetails: JSON.stringify(shopPlanDetails.data) });
+    return { "shopDetails": JSON.stringify(shopPlanDetails.data) };
 };
 
   
@@ -39,13 +38,13 @@ export const action = async ({ request }) => {
             return redirect(`/app/uniwareSignUpII`); // Redirect here
     
         }else {
-            return json({});
+            return {};
         }
    } else if(actionType == 'login'){
      return redirect(`/app/uniwareLogin`);
    }
     console.log("received error", response.error);
-    return json({ "successful": false, "error": response.error });
+    return { "successful": false, "error": response.error };
  };
  
  

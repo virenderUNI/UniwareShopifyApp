@@ -5,29 +5,27 @@ import axios from "axios";
 
 export async function checkUniwareSession(shopDetails) {
   const appUniwareCredResponse = await findUniwareCred(shopDetails);
-
-  if (appUniwareCredResponse.successful) {
+  const shopifyUniwareTenant = await findShopifyUniwareTenant(shopDetails);
+  
+  if (appUniwareCredResponse.successful && shopifyUniwareTenant.successful) {
     const appUniwareCred = appUniwareCredResponse.data;
     const currentTimestamp = new Date().getTime();
-
-    if (appUniwareCred.expiresAt - currentTimestamp > 0) {
-      console.log("this is not evaluated")
+    console.log("shopifyUnware tenant details are ", shopifyUniwareTenant);
+    console.log("charges accepted value",shopifyUniwareTenant.data.chargesAccepted);
+    if (appUniwareCred.expiresAt - currentTimestamp > 0 && shopifyUniwareTenant.data.chargesAccepted) {
       return { "redirectUrl": "/app/channel", "tenantCode": appUniwareCred.tenantCode };
     }
     else {
-      console.log("this is evaluated")
       return { "redirectUrl": "/app/uniwareLogin", "tenantCode": appUniwareCred.tenantCode };
     }
   }
   else {
-    console.log("looking for tenant details")
-    const shopifyUniwareTenant = await findShopifyUniwareTenant(shopDetails);
     if (shopifyUniwareTenant.successful) {
       if (shopifyUniwareTenant.data.tenantSetupStatus === "RUNNING") {
         return { "tenantCode": shopifyUniwareTenant.data.tenantCode, "redirectUrl": `/app/channel?charge_id=${shopifyUniwareTenant.data.chargeId}` }
       }
     }
-    return { "tenantCode": "abc", "redirectUrl": null }
+    return { "tenantCode": null, "redirectUrl": null }
   }
 }
 
