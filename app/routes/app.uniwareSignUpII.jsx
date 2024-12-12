@@ -1,96 +1,101 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Button, TextField, Card, Layout } from "@shopify/polaris";
-import { Form, useLoaderData, Link,useFetcher } from "@remix-run/react";
-import { json, redirect as redirectRemix } from "@remix-run/node";
+import { Form, useLoaderData } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import { getShopifyPlanDetails } from "../services/apiClient.server";
-import { useActionData } from "@remix-run/react";
-import { useAppBridge } from "@shopify/app-bridge-react";
-import { Redirect } from "@shopify/app-bridge/actions";
 import { getLocationForShop } from '../services/apiClient.server';
-import { generateTenantCode} from '../services/signUpService.server';
+import { generateTenantCode } from '../services/signUpService.server';
 import useSessionStorage from '../customHooks/useSessionStorage';
 import { validateTenantCode } from '../services/signUpService.server';
-import { getSharedState} from "../services/signUpService.server";
+import { saveTenantCreationParams } from "../services/signUpService.server";
+import { setConfirmationUrl } from "../services/signUpService.server";
 
 export const loader = async ({ request }) => {
-    // console.log("loader request is from signup2 :" , request);
-    const url = new URL(request.url);
-    const {session, admin, redirect} = await authenticate.admin(request);
-   
-    console.log("Shared state is: ") ;
-    console.log(getSharedState());
-    if (getSharedState().shouldRunSignUpIILoader == '2') {
-        return redirect('/app/uniwareSignUpIII') ;
-        return json({ message: "Loader bypassed" });
-    }
-    console.log("Loader url:" ,url);
-    if (url.searchParams.get("skipLoader") === "true") {
-        return json({});
-    }
-    const locationResponse = await getLocationForShop(session.shop,session.accessToken);
-    const phone = locationResponse.data.locations[0].phone;
-    const response = await generateTenantCode(session.shop,phone);
-    console.log(response); 
-    if(response.successful)
-    {
-        const tenantCode = response.data.tenantCode;
-        console.log("tenantCode from loader" , tenantCode)
-        return json({ tenantCode });
-    }
-    const shopPlanDetails = await getShopifyPlanDetails(admin);
-    console.log("shop plan details : ",shopPlanDetails);
-    if (shopPlanDetails.data.shop.plan.shopifyPlus) {
-      throw redirectRemix("/app/denyLogin");
-    }
-    return json({ shopDetails: JSON.stringify(shopPlanDetails.data) });
+  // console.log("loader request is from signup2 :" , request);
+  const { session, admin, redirect } = await authenticate.admin(request);
+  const locationResponse = await getLocationForShop(session.shop, session.accessToken);
+  const phone = locationResponse.data.locations[0].phone;
+  const response = await generateTenantCode(session.shop, phone);
+
+  console.log(response);
+  if (response.successful) {
+    const tenantCode = response.data.tenantCode;
+    console.log("tenantCode from loader", tenantCode)
+    return { "tenantCode": tenantCode };
+  }
+
+  const shopPlanDetails = await getShopifyPlanDetails(admin);
+  console.log("shop plan details : ", shopPlanDetails);
+  if (shopPlanDetails.data.shop.plan.shopifyPlus) {
+    throw redirect("/app/denyLogin");
+  }
+  return { "shopDetails": JSON.stringify(shopPlanDetails.data) };
 };
 
 export const action = async ({ request }) => {
-    const formData = new URLSearchParams(await request.text());
-    const tenantCode = formData.get('tenantCode');
-    const actionType = formData.get("actionType"); 
-    const { session, admin, redirect } = await authenticate.admin(request);
-    console.log("action type is ", actionType)
-    console.log("tenant code from action: ",tenantCode);
-    if(actionType === 'signup'){
-        console.log("new tenant code from UI form is : ",tenantCode);
-        const response = await validateTenantCode(session.shop,tenantCode);
-        if(response.successful === true) {
-            console.log("new generated tenantCode should be",response.tenantCode);
-            return redirect('/app/uniwareSignUpIII?skipLoader=true');
-        }else {
-            console.log("Validation failed:", response.error);
-            return json({ error: "Validation failed", details: response.error }, { status: 400 });
-        }
-    } 
-    else if(actionType === 'login'){ 
-    
-     return redirect("/app/uniwareLogin");
-    }
-    console.log("received error", response.error);
-    return json({ "successful": false, "error": response.error });
- };
- 
- 
-export default function uniwareSignUpSignUpII() {
-  const actionData = useActionData();
-  const loaderData = useLoaderData();
-  const [tenantCode, setTenantCode] = useSessionStorage('tenantCode', loaderData.tenantCode || '');   
-  const linkRef = useRef(null);
-  const formRef = useRef(); 
-  const fetcher = useFetcher();
-   
-  const shopify = useAppBridge();
-  
-  useEffect(() => {
-    if (actionData?.tenantCode) {
-    setTenantCode(actionData.phone);
-    }
-  }, [actionData, setTenantCode]);
+  const formData = new URLSearchParams(await request.text());
+  const tenantCode = formData.get('tenantCode');
+  const actionType = formData.get("actionType");
+  const { session, admin, redirect } = await authenticate.admin(request);
+  console.log("action type is ", actionType)
+  console.log("tenant code from action: ", tenantCode);
+  if (actionType === 'signup') {
+    console.log("new tenant code from UI form is : ", tenantCode);
+    const validateTenantCodeResponse = await validateTenantCode(session.shop, tenantCode);
+    console.log("validate tenant code response is ", validateTenantCodeResponse);
+    console.log("validate tenant code response success ", validateTenantCodeResponse.successful);
+    if (validateTenantCodeResponse.successful) {
+      console.log("new generated tenantCode should be", validateTenantCodeResponse.tenantCode);
+      const locationResponse = await getLocationForShop(session.shop, session.accessToken);
+      const singleLocationDataShop = locationResponse.data.locations[0];
 
-  const handleLoginClick = (actionType) => (e) =>{
-    e.preventDefault(); 
+      const tenantCreationParams = {
+        address1: singleLocationDataShop.address1 || 'Dummy',
+        address2: singleLocationDataShop.address2 || '',
+        city: singleLocationDataShop.city || 'Delhi',
+        pincode: singleLocationDataShop.zip || '110001',
+        state: singleLocationDataShop.province || 'Delhi',
+        country: singleLocationDataShop.country || 'IN',
+        locationId: singleLocationDataShop.id.toString() || ''
+      };
+      console.log("tenantCreationParams are ", tenantCreationParams);
+      const saveTenantCreationParamsResponse = await saveTenantCreationParams(session, tenantCreationParams, admin);
+      if (saveTenantCreationParamsResponse.successful) {
+        setConfirmationUrl({ confirmationUrl: saveTenantCreationParamsResponse.data.confirmationUrl });
+        // redirect(response.data.confirmationUrl, { target: "_parent" });
+        console.log("executing redirect");
+        return redirect('/app/uniwareConfirmation', { target: "_parent" });
+        // return {successful:true,"confirmationUrl": response.data.confirmationUrl}
+      }
+    }
+    else {
+      console.log("Validation failed:", response.error);
+      return { "error": "Validation failed", "details": response.error, "status": 400 };
+    }
+  }
+  else if (actionType === 'login') {
+    return redirect("/app/uniwareLogin");
+  }
+};
+
+
+export default function uniwareSignUpSignUpII() {
+  const loaderData = useLoaderData();
+  const [tenantCode, setTenantCode] = useSessionStorage('tenantCode', loaderData.tenantCode || '');
+  // const linkRef = useRef(null);
+  const formRef = useRef();
+  // const fetcher = useFetcher();
+
+  // const shopify = useAppBridge();
+
+  // useEffect(() => {
+  //   if (actionData?.tenantCode) {
+  //     setTenantCode(actionData.phone);
+  //   }
+  // }, [actionData, setTenantCode]);
+
+  const handleLoginClick = (actionType) => (e) => {
+    e.preventDefault();
     console.log("Login from signup II.......");
     // fetcher.submit({ action: actionType }, { method: 'post' });
 
@@ -98,7 +103,7 @@ export default function uniwareSignUpSignUpII() {
     actionTypeInput.value = 'login';
     formRef.current.submit();
   };
-  
+
   return (
     <div style={styles.container}>
       <div style={styles.leftSection}>
@@ -151,42 +156,42 @@ export default function uniwareSignUpSignUpII() {
             type="tenantCode"
             name="tenantCode"
           />
-          <Button submit primary>Next</Button>
+          <Button submit primary>Submit</Button>
         </Form>
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
-            Already have an account?{" "}
-           <button
+          Already have an account?{" "}
+          <button
             style={{
-            background: "none",
-            border: "none",
-            color: "#1F87C2",
-            textDecoration: "underline",
-            cursor: "pointer"
+              background: "none",
+              border: "none",
+              color: "#1F87C2",
+              textDecoration: "underline",
+              cursor: "pointer"
             }}
             onClick={handleLoginClick('login')}
-        >
+          >
             Log In
-        </button>
+          </button>
         </div>
         <div style={styles.socialMedia}>
-            <a href="https://www.linkedin.com/company/unicommerce/?originalSubdomain=in" target="_blank" rel="noopener noreferrer">
-                <img src="/images/linkedin.png" alt="LinkedIn" style={styles.socialIcon} />
-            </a>
-            <a href="https://www.facebook.com/unicommerce/" target="_blank" rel="noopener noreferrer">
-                <img src="/images/facebook.png" alt="Facebook" style={styles.socialIcon} />
-            </a>
-            <a href="https://www.youtube.com/channel/UCxghboEldMtQRVJxqCq6UHg" target="_blank" rel="noopener noreferrer">
-                <img src="/images/youtube.jpg" alt="YouTube" style={styles.socialIcon} />
-            </a>
-            <a href="https://www.instagram.com/unicommerce_esolutions/?hl=en" target="_blank" rel="noopener noreferrer">
-                <img src="/images/instagram.jpg" alt="Twitter" style={styles.socialIcon} />
-            </a>
-            <a href="https://x.com/Unicommerce_?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" target="_blank" rel="noopener noreferrer">
-                <img src="/images/twitter.jpg" alt="Twitter" style={styles.socialIcon} />
-            </a>
-           
+          <a href="https://www.linkedin.com/company/unicommerce/?originalSubdomain=in" target="_blank" rel="noopener noreferrer">
+            <img src="/images/linkedin.png" alt="LinkedIn" style={styles.socialIcon} />
+          </a>
+          <a href="https://www.facebook.com/unicommerce/" target="_blank" rel="noopener noreferrer">
+            <img src="/images/facebook.png" alt="Facebook" style={styles.socialIcon} />
+          </a>
+          <a href="https://www.youtube.com/channel/UCxghboEldMtQRVJxqCq6UHg" target="_blank" rel="noopener noreferrer">
+            <img src="/images/youtube.jpg" alt="YouTube" style={styles.socialIcon} />
+          </a>
+          <a href="https://www.instagram.com/unicommerce_esolutions/?hl=en" target="_blank" rel="noopener noreferrer">
+            <img src="/images/instagram.jpg" alt="Twitter" style={styles.socialIcon} />
+          </a>
+          <a href="https://x.com/Unicommerce_?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" target="_blank" rel="noopener noreferrer">
+            <img src="/images/twitter.jpg" alt="Twitter" style={styles.socialIcon} />
+          </a>
+
         </div>
-    
+
       </div>
     </div>
   );
@@ -239,33 +244,33 @@ const styles = {
   },
   brandLogos: {
     display: "grid",
-    gridTemplateColumns: "repeat(6, 1fr)", 
-    gap: "0.5rem", 
-    width: "480px", 
+    gridTemplateColumns: "repeat(6, 1fr)",
+    gap: "0.5rem",
+    width: "480px",
     height: "85px",
     borderRadius: "8px",
-    overflow: "hidden", 
-    alignItems: "center", 
-    justifyItems: "center", 
-    backgroundColor: "#f9f9f9", 
-    padding: "0.5rem", 
+    overflow: "hidden",
+    alignItems: "center",
+    justifyItems: "center",
+    backgroundColor: "#f9f9f9",
+    padding: "0.5rem",
     marginTop: "1rem"
   },
   logo: {
-    maxWidth: "100%", 
-    maxHeight: "100%", 
-    objectFit: "contain", 
+    maxWidth: "100%",
+    maxHeight: "100%",
+    objectFit: "contain",
   },
-//   socialMedia: {
-//     position: "absolute",
-//     bottom: "2rem", // Positions 2rem from the bottom of rightSection
-//     left: "50%", // Positions it horizontally in the middle
-//     transform: "translateX(-50%)", // Adjusts for centering
-//     display: "flex",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     gap: "0.5rem",
-//   },
+  //   socialMedia: {
+  //     position: "absolute",
+  //     bottom: "2rem", // Positions 2rem from the bottom of rightSection
+  //     left: "50%", // Positions it horizontally in the middle
+  //     transform: "translateX(-50%)", // Adjusts for centering
+  //     display: "flex",
+  //     justifyContent: "center",
+  //     alignItems: "center",
+  //     gap: "0.5rem",
+  //   },
   socialMedia: {
     display: "flex",
     justifyContent: "center",
@@ -277,7 +282,7 @@ const styles = {
   socialIcon: {
     width: "30px",
     height: "26px",
-    objectFit:"contain",
+    objectFit: "contain",
     cursor: "pointer",
   },
   rightSection: {

@@ -8,7 +8,7 @@ let sharedState = {
 };
 
 let confirmationUrl = {
-    url: ''
+    url: null
 };
 
 // Function to update shared state

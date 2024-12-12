@@ -50,13 +50,13 @@ async function createTenantIfNotExists(shopDetails, tenantCode, session) {
         tenantCode: tenantCode,
         shopDomain: shopDetails,
         tenantSetupStatus: "COMPLETE",
-        phone: singleLocationDataShop.phone || '',
-        address1: singleLocationDataShop.address1 || '',
-        address2: singleLocationDataShop.address2 || '',
-        city: singleLocationDataShop.city || '',
-        pincode: singleLocationDataShop.zip || '',
-        state: singleLocationDataShop.province || '',
-        country: singleLocationDataShop.country || '',
+        phone: singleLocationDataShop.phone || '9999999999',
+        address1: singleLocationDataShop.address1 || 'Delhi',
+        address2: singleLocationDataShop.address2 || 'New Delhi',
+        city: singleLocationDataShop.city || 'New Delhi',
+        pincode: singleLocationDataShop.zip || '110001',
+        state: singleLocationDataShop.province || 'New Delhi',
+        country: singleLocationDataShop.country || 'IN',
         locationId: singleLocationDataShop.id.toString() || '',
         tenantType: checkUniwareTenantTypeResponse.data.tenantType
     };
@@ -92,7 +92,8 @@ export async function createUniwareLoginSession(tenantCode, username, password, 
                 return createTenantVoResponse;
             }
             console.log(createTenantVoResponse.data);
-            if (createTenantVoResponse.data.tenantType != 'ENTERPRISE') {
+            if (createTenantVoResponse.data.tenantType == 'ENTERPRISE')   // This check needs to be changed
+            {
                 return { "successful": false, error: "This is an Enterprise Tenant.Please continue using shopify custom app for your store only." }
             }
             const result = await handleApplicationCharge(admin, session);

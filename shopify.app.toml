@@ -1,33 +1,29 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "dee6bc84230fa1fac3a0802a8cb6017d"
-name = "app-uniware"
-handle = "app-uniware"
-application_url = "https://strengthen-isbn-ve-tomorrow.trycloudflare.com"
+client_id = "05bfa7729e53772a190b4e79d0e2d241"
+name = "app-uniware-UI"
+handle = "app-uniware-ui"
+application_url = "https://31c9-203-189-255-51.ngrok-free.app"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
-dev_store_url = "bhagv.myshopify.com"
+dev_store_url = "uniwaredevstore.myshopify.com"
 include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_assigned_fulfillment_orders,read_fulfillments,read_inventory,read_locations,read_merchant_managed_fulfillment_orders,read_orders,read_products,read_third_party_fulfillment_orders,write_assigned_fulfillment_orders,write_fulfillments,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders"
+scopes = ""
 
 [auth]
 redirect_urls = [
-  "https://strengthen-isbn-ve-tomorrow.trycloudflare.com/auth/callback",
-  "https://strengthen-isbn-ve-tomorrow.trycloudflare.com/auth/shopify/callback",
-  "https://strengthen-isbn-ve-tomorrow.trycloudflare.com/api/auth/callback"
+  "https://31c9-203-189-255-51.ngrok-free.app/auth/callback",
+  "https://31c9-203-189-255-51.ngrok-free.app/auth/shopify/callback",
+  "https://31c9-203-189-255-51.ngrok-free.app/api/auth/callback"
 ]
 
 [webhooks]
-api_version = "2024-07"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks"
+api_version = "2024-10"
 
 [pos]
 embedded = false

@@ -1,41 +1,46 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, TextField, Card, Layout } from "@shopify/polaris";
 import { Form, useNavigate, useLoaderData, Link } from "@remix-run/react";
-import { json, redirect as redirectRemix } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import { getShopifyPlanDetails } from "../services/apiClient.server";
 import { useActionData } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { createUniwareLoginSession } from "../services/loginService.server";
+import { setConfirmationUrl } from "../services/signUpService.server";
 
 export const loader = async ({ request }) => {
   const { session, admin, redirect } = await authenticate.admin(request);
 
   const shopPlanDetails = await getShopifyPlanDetails(admin);
   if (shopPlanDetails.data.shop.plan.shopifyPlus) {
-    throw redirectRemix("/app/denyLogin");
+    throw redirect("/app/denyLogin");
   }
-  return json({ shopDetails: JSON.stringify(shopPlanDetails.data) });
+  return { "shopDetails": JSON.stringify(shopPlanDetails.data) };
 };
 
 export const action = async ({ request }) => {
   const { session, admin ,redirect } = await authenticate.admin(request);
   const formData = await request.formData();
+  const tenantCode = formData.get("tenantCode");
   const username = formData.get("username");
   const password = formData.get("password");
   const actionType = formData.get("actionType"); 
  
   if(actionType == 'login'){
     const response = await createUniwareLoginSession(
+      tenantCode,
       username,
       password,
       admin,
       session
     );
+    console.log("createUniwareLoginSession : ",response);
     if (response.successful) {
       if (response.data.confirmationUrl) {
-        return { successful: true, confirmationUrl: response.data.confirmationUrl };
+        setConfirmationUrl({ confirmationUrl: response.data.confirmationUrl })
+        console.log("executing redirect");
+        return redirect('/app/uniwareConfirmation', { target: "_parent" })
       } else if (response.data.chargeId) {
         return redirect(`/app/processChargeCreation?chargeId=${response.data.charge_id}`);
       }
@@ -48,6 +53,7 @@ export const action = async ({ request }) => {
 };
 
 export default function Login() {
+  const [tenantCode, setTenantCode] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   // const [actionType, setActionType] = useState("login"); // Track action type
@@ -119,6 +125,16 @@ export default function Login() {
 
         <Form method="post" ref={formRef} style={styles.formContainer}>
           <input type="hidden" name="actionType" value="login" />
+
+          <TextField
+            label={<span style={styles.customLabel}>Tenant Code</span>}
+            value={tenantCode}
+            onChange={(value) => setTenantCode(value)}
+            placeholder="Enter your Tenant Code"
+            type="text"
+            name="tenantCode"
+            autoComplete="tenantCode"
+          />
 
           <TextField
             label={<span style={styles.customLabel}>Username</span>}
@@ -299,9 +315,5 @@ const styles = {
     justifyContent: "center",
     marginTop: "2rem",
     gap: "1rem",
-  },
-  socialIcon: {
-    width: "30px",
-    height: "30px",
-  },
+  }
 };

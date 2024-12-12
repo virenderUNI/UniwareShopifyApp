@@ -119,7 +119,7 @@ export async function createApplicationRecurrentCharge(admin,session) {
         variables: {
           name: "Super Duper Recurring Plan",
           returnUrl: `https://${session.shop}/admin/apps/${process.env.SHOPIFY_API_KEY}/app/processChargeCreation`,
-          test:true,
+          test:true, // to be removed in production
           lineItems: [
             {
               "plan": {

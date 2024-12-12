@@ -344,57 +344,6 @@ export const loader = async ({ request }) => {
         return redirect(response.redirectUrl)
     }
 
-    return ({shop:session.shop})
+    return redirect("/app/uniwareLogin");
 
 };
-
-export const action = async ({ request }) => {
-
-    const { session, redirect } = await authenticate.admin(request);
-
-    const action = 'login'
-
-    console.log("Received action:", action);
-
-    if (action === 'login') {
-        return redirect('/app/uniwareLogin');
-    } else if (action === 'signup') {
-        return redirect('/app/uniwareSignUpI');
-    }
-
-    return json({ error: 'Unknown action' }, { status: 400 });
-}
-
-export default function Index() {
-    const loaderData = useLoaderData();
-    const actionData = useActionData();
-    const fetcher = useFetcher();
-
-    const handleClick = (actionType) => (event) => {
-        event.preventDefault(); 
-
-        fetcher.submit({ action: actionType }, { method: 'post' });
-    };
-
-    return (
-        <Page title="Welcome">
-            <Layout>
-                <Layout.Section>
-                    <Card sectioned>
-                        <Button onClick={handleClick('login')} primary>
-                            Login
-                        </Button>
-                        
-                        <Button onClick={handleClick('signup')} style={{ marginLeft: '10px' }}>
-                            Sign Up
-                        </Button>
-                        {loaderData?.redirect && <p>{loaderData.redirect}</p>}
-                    </Card>
-                </Layout.Section>
-            </Layout>
-        </Page>
-    );
-}
-
-
-
