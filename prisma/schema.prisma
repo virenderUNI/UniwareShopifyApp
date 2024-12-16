@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = "mongodb://localhost:27017/shopifyApp"
+  url      = "mongodb://mongo1.proxy-in.unicommerce.infra:27017/shopifyApp"
 }
 
 model Session {

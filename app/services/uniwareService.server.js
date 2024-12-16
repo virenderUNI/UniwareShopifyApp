@@ -340,12 +340,12 @@ export async function createNewUniwareTenantShopifyChannel(shopDetails, accessTo
     state: shopifyUniwareTenantDetails.state,
     country: shopifyUniwareTenantDetails.country,
     mode: "TESTING",
-    referrerCode: "Shopify",
+    referrerCode: "SHOPIFY",
     serverFamily: "StgECloud",
     minimumInvoicesApplicable: false,
     billingMode: "PREPAID",
     postpaidContract: "SHOPIFY",
-    productCode: "STANDARD_SHOPIFY",
+    productCode: "LITE",
     channelRequests: [
       {
         channel: {

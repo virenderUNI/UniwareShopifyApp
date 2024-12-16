@@ -3,7 +3,7 @@
 client_id = "05bfa7729e53772a190b4e79d0e2d241"
 name = "app-uniware-UI"
 handle = "app-uniware-ui"
-application_url = "https://31c9-203-189-255-51.ngrok-free.app"
+application_url = "https://shopify-node.unicommerce.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_assigned_fulfillment_orders,read_fulfillments,read_inventory,read
 
 [auth]
 redirect_urls = [
-  "https://31c9-203-189-255-51.ngrok-free.app/auth/callback",
-  "https://31c9-203-189-255-51.ngrok-free.app/auth/shopify/callback",
-  "https://31c9-203-189-255-51.ngrok-free.app/api/auth/callback"
+  "https://shopify-node.unicommerce.com/auth/callback",
+  "https://shopify-node.unicommerce.com/auth/shopify/callback",
+  "https://shopify-node.unicommerce.com/api/auth/callback"
 ]
 
 [webhooks]
