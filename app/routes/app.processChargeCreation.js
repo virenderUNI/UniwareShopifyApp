@@ -19,13 +19,13 @@ export const loader = async ({ request }) => {
 
     // save chargeId to shopifyProxyMongo collection 
     // Commenting to test 
-//    const response = await saveChargeIdProxy(chargeId,session.shop,session.accessToken)
-    // console.log("response save charge id is",response.successful);
-    // if (!response.successful) {
-    //     console.log("redirecting to app")
-    //     const errorMessage = "Unable to create charge Id as user declined to accept charges"
-    //     throw redirect(`/app?message=${errorMessage}`)
-    // }
+   const response = await saveChargeIdProxy(chargeId,session.shop,session.accessToken)
+    console.log("response save charge id is",response.successful);
+    if (!response.successful) {
+        console.log("redirecting to app")
+        const errorMessage = "Unable to create charge Id as user declined to accept charges"
+        throw redirect(`/app?message=${errorMessage}`)
+    }
     try {
         updateChargeIdShopifyUniware(session.shop, chargeId, session.accessToken)
         const shopifyUniwareTenant = await findShopifyUniwareTenant(session.shop)
