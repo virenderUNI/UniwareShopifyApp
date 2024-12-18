@@ -341,7 +341,7 @@ export async function createNewUniwareTenantShopifyChannel(shopDetails, accessTo
     country: shopifyUniwareTenantDetails.country,
     mode: "TESTING",
     referrerCode: "SHOPIFY",
-    serverFamily: "StgECloud",
+    serverFamily: "CLOUD",
     minimumInvoicesApplicable: false,
     billingMode: "PREPAID",
     postpaidContract: "SHOPIFY",

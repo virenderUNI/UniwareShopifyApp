@@ -79,7 +79,7 @@ export async function buildShopifyChannelUniware(shopDetails, accessToken) {
         }
         else if (shopifyUniwareTenant.data.tenantSetupStatus === "RUNNING") {
             console.log("creating new tenant");
-            // const tenantCreationResponse = createNewUniwareTenantShopifyChannel(shopDetails, accessToken)
+            const tenantCreationResponse = createNewUniwareTenantShopifyChannel(shopDetails, accessToken)
             const connectorParams = await createConnectorMap(shopDetails, accessToken);
             const shopifyUniwareChannelMao = await saveShopifyUniwareChannelDetails(connectorParams);
             const userDetails = {
