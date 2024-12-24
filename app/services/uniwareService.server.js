@@ -21,7 +21,7 @@ export async function checkUniwareSession(shopDetails) {
   }
   else {
     if (shopifyUniwareTenant.successful) {
-      if (shopifyUniwareTenant.data.tenantSetupStatus === "RUNNING") {
+      if (shopifyUniwareTenant.data.tenantSetupStatus === "RUNNING" || shopifyUniwareTenant.data.tenantSetupStatus === "COMPLETE") {
         return { "tenantCode": shopifyUniwareTenant.data.tenantCode, "redirectUrl": `/app/channel?charge_id=${shopifyUniwareTenant.data.chargeId}` }
       }
     }
@@ -407,6 +407,44 @@ export async function getUniwareTenantType(tenantCode, shopDetails) {
   if (!shopUniwareAuthDetails.successful) {
     return shopUniwareAuthDetails;
   }
+
+  const authToken = shopUniwareAuthDetails.data.accessToken;
+
+  const requestBody = {
+    "tenantCode": tenantCode
+  };
+
+  const requestHeaders = {
+    "Content-Type": "application/json",
+    "Authorization": `bearer ${authToken}`
+  }
+
+  const serverUrl = `https://${tenantCode}.unicommerce.com/services/rest/v1/system/tenant/getTenantDetails`;
+
+
+  try {
+    const uniwareTenantTypeResponse = await axios.post(serverUrl, requestBody, { headers: requestHeaders });
+  
+    console.log("uniwareTenantTypeResponse response is ", JSON.stringify(uniwareTenantTypeResponse.data));
+
+    if (!uniwareTenantTypeResponse.data.successful) {
+      return uniwareTenantTypeResponse.data;
+    }
+    return { successful: true, data: uniwareTenantTypeResponse.data.profile };
+
+  }
+  catch (error) {
+    return { successful: false, error: `Error while fetch uniware tenant Type ${error.message}` }
+  }
+
+}
+
+export async function deactivateUniwareTenant(shopDetails) {
+
+  const shopUniwareAuthDetails = await findShopifyUniwareTenant(shopDetails);
+  if (!shopUniwareAuthDetails.successful) {
+    return true;
+  }x
 
   const authToken = shopUniwareAuthDetails.data.accessToken;
 

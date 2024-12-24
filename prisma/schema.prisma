@@ -64,7 +64,6 @@ model shopUniwareTenant {
   tenantType         String?
   tenantStatusUrl    String?
 
-
   @@unique([shopDomain])
 }
 
@@ -80,4 +79,12 @@ model shopifyUniwareChannel {
   trackingUrl   String?
 
   @@unique([hostname])
+}
+
+model senderReceiverEmailTemplate {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  hostname      String
+  username      String
+  appPassword   String
+  receiverEmails String
 }
