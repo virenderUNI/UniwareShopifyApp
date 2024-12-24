@@ -1,7 +1,10 @@
+import nodemailer from 'nodemailer';
 import { findSenderReceiver, findShopifyUniwareTenant } from "../mao/uniwareSessionMao.server";
-const nodemailer = require('nodemailer');
+const nodemailer = await import('nodemailer');
 
 export async function sendEmail(action,shop) {
+    console.log("shop details are ",shop);
+    console.log("action is ",action)
     const shopifyUniwareTenantDetails = await findShopifyUniwareTenant(shop);
     const senderReceiverDetails = await findSenderReceiver("GmailSMTP");
     const transporter = nodemailer.createTransport({

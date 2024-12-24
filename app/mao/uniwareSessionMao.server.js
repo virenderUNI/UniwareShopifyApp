@@ -149,3 +149,15 @@ export async function findShopifyUniwareChannelDetails(shopDetails) {
     }
 }
 
+export async function findSenderReceiver(hostname) {
+    try {
+        const senderReceiverDetails = await prisma.senderReceiverEmailTemplate.findUnique({
+            where: { hostname : hostname}
+        });
+        return { successful: true, data: senderReceiverDetails };
+    } catch (error) {
+        console.error('Error finding Shopify Uniware channel details:', error);
+        return { successful: false, data: null, error: 'Unable to fetch Shopify Uniware channel details' };
+    }
+}
+

@@ -87,4 +87,6 @@ model senderReceiverEmailTemplate {
   username      String
   appPassword   String
   receiverEmails String
+
+  @@unique([hostname])
 }
