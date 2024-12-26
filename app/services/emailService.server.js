@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 import { findSenderReceiver, findShopifyUniwareTenant } from "../mao/uniwareSessionMao.server";
-const nodemailer = await import('nodemailer');
 
 export async function sendEmail(action,shop) {
     console.log("shop details are ",shop);
