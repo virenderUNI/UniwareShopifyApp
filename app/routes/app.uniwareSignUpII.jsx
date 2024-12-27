@@ -64,7 +64,7 @@ export const action = async ({ request }) => {
         setConfirmationUrl({ confirmationUrl: saveTenantCreationParamsResponse.data.confirmationUrl });
         // redirect(response.data.confirmationUrl, { target: "_parent" });
         console.log("executing redirect");
-        return redirect('/app/uniwareConfirmation', { target: "_parent" });
+        return redirect('/app/uniwareConfirmation',{target:"_top"});
         // return {successful:true,"confirmationUrl": response.data.confirmationUrl}
       }
     }
