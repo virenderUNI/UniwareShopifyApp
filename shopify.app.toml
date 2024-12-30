@@ -3,7 +3,7 @@
 client_id = "05bfa7729e53772a190b4e79d0e2d241"
 name = "Unicommerce"
 handle = "unicommerce"
-application_url = "https://shopify-node.unicommerce.com"
+application_url = "https://uniwareapp-node.unicommerce.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_assigned_fulfillment_orders,read_fulfillments,read_inventory,read
 
 [auth]
 redirect_urls = [
-  "https://shopify-node.unicommerce.com/auth/callback",
-  "https://shopify-node.unicommerce.com/auth/shopify/callback",
-  "https://shopify-node.unicommerce.com/api/auth/callback"
+  "https://uniwareapp-node.unicommerce.com/auth/callback",
+  "https://uniwareapp-node.unicommerce.com/auth/shopify/callback",
+  "https://uniwareapp-node.unicommerce.com/api/auth/callback"
 ]
 
 [webhooks]
